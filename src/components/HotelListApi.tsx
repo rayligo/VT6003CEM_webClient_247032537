@@ -31,6 +31,11 @@ const HotelListApi: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("call fetchHotels()");
+    fetchHotels();
+  }, []);
+
+  useEffect(() => {
     console.log("Current User:", currentUser);
     console.log("Token:", localStorage.getItem("aToken"));
 
@@ -39,39 +44,37 @@ const HotelListApi: React.FC = () => {
       navigate("/login");
       return;
     }
+  }, [currentUser]);
 
-    const fetchHotels = async () => {
-      try {
-        const response = await axios.get(`${api.uri}/hotel`, {
-          headers: {
-            Authorization: `Basic ${localStorage.getItem("aToken")}`,
-          },
-        });
-        console.log("API Response:", response.data);
+  const fetchHotels = async () => {
+    try {
+      const response = await axios.post(`${api.uri}/hotel`, {
+        headers: {
+          Authorization: `Basic ${localStorage.getItem("aToken")}`,
+        },
+      });
+      console.log("API Response:", response.data);
 
-        if (response.data.status === "success") {
-          const locations = response.data.data.results?.locations || [];
-          console.log("Locations:", locations);
-          setHotels(locations);
-        } else {
-          setError("Failed to fetch hotel data.");
-          message.error("Failed to fetch hotel data.");
-        }
-      } catch (error: any) {
-        console.error("Error fetching hotels:", error);
-        const errorMessage =
-          error.response?.data?.message ||
-          error.message ||
-          "An error occurred while fetching hotel data.";
-        setError(errorMessage);
-        message.error(errorMessage);
-      } finally {
-        setLoading(false);
+      if (response.data.status === "success") {
+        const locations = response.data.data.results?.locations || [];
+        console.log("Locations:", locations);
+        setHotels(locations);
+      } else {
+        setError("Failed to fetch hotel data.");
+        message.error("Failed to fetch hotel data.");
       }
-    };
-
-    fetchHotels();
-  }, [currentUser, navigate]);
+    } catch (error: any) {
+      console.error("Error fetching hotels:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred while fetching hotel data.";
+      setError(errorMessage);
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
