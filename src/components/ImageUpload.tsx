@@ -1,9 +1,10 @@
-import React from 'react';
-import 'antd/dist/reset.css';
-import { Upload, Button, message, Alert, Typography } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import { api } from './common/http-common';
+import React from "react";
+import "antd/dist/reset.css";
+import { Upload, Button, message, Alert, Typography } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { api } from "./common/http-common";
 import { getCurrentUser } from "../services/auth.service";
+import axios from "axios";
 
 interface ImageUploadState {
   fileList: File[];
@@ -11,6 +12,7 @@ interface ImageUploadState {
   imgPosted: any[];
   isUploadOk: boolean;
 }
+
 const currentUser = getCurrentUser();
 
 class ImageUpload extends React.Component<{}, ImageUploadState> {
@@ -28,35 +30,96 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
     const { fileList } = this.state;
     const formData = new FormData();
     fileList.forEach((file) => {
-      formData.append('upload', file, file.name);
+      formData.append("upload", file, file.name);
     });
 
     this.setState({ uploading: true });
 
     const requestOptions = {
-      method: 'POST',
+      method: "POST",
       body: formData,
-      redirect: 'follow',
+      redirect: "follow",
     };
 
     fetch(`${api.uri}/images`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        message.success('Upload successful.');
+        message.success("Upload successful.");
         this.setState({
           isUploadOk: true,
           imgPosted: result,
         });
+
+        // Update the user's avatarurl in the database
+        if (currentUser && result.links?.path) {
+          this.updateUserAvatar(result.links.path);
+        }
       })
       .catch((error) => {
         message.error(`Upload failed: ${error.message}`);
-        console.error('Error:', error);
+        console.error("Error:", error);
       })
       .finally(() => {
         this.setState({ uploading: false });
       });
   };
+  updateUserAvatar = (avatarUrl: string) => {
+    const userId = currentUser?.id;
+    if (!userId) {
+      message.error("No user is logged in.");
+      return;
+    }
 
+    const token = localStorage.getItem("aToken");
+    if (!token) {
+      message.error("Authentication token is missing. Please log in again.");
+      return;
+    }
+
+    // Get username and email from currentUser
+    const username = currentUser?.username;
+    const email = currentUser?.email;
+    if (!username || !email) {
+      message.error("User information is incomplete. Please log in again.");
+      return;
+    }
+
+    axios
+      .put(
+        `${api.uri}/users/${userId}`,
+        {
+          avatarurl: avatarUrl,
+          username: username,
+          email: email,
+          password: "", // Send empty password to satisfy schema
+        },
+        {
+          headers: {
+            Authorization: `Basic ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((response) => {
+        console.log("Avatar update response:", response.data);
+        message.success("Profile avatar updated successfully.");
+        const updatedUser = { ...currentUser, avatarurl: avatarUrl };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        window.location.reload();
+      })
+      .catch((error) => {
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update profile avatar.";
+        console.error("Avatar update error:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        message.error(`Failed to update avatar: ${errorMessage}`);
+      });
+  };
   render() {
     const { Title } = Typography;
     const { uploading, fileList, isUploadOk, imgPosted } = this.state;
@@ -77,16 +140,14 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
     };
 
     return (
-      <div>
-       { currentUser.role=="admin"? (<Title level={3} style={{ color: '#0032b3' }}>
-          Select and Upload Hotel or Avatar Image
-        </Title> ) :(<Title level={3} style={{ color: '#0032b3' }}>
-          Select and Upload Avatar Image
-        </Title>)}
+      <>
+        {currentUser?.role === "admin" ? (
+          <Title level={2}>Admin Upload Image</Title>
+        ) : (
+          <Title level={2}>User Upload Image</Title>
+        )}
         <Upload {...uploadProps}>
-          <Button icon={<UploadOutlined />} aria-label="Select File">
-            Select File
-          </Button>
+          <Button icon={<UploadOutlined />}>Select File</Button>
         </Upload>
         <Button
           type="primary"
@@ -95,15 +156,20 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
           loading={uploading}
           style={{ marginTop: 16 }}
         >
-          {uploading ? 'Uploading' : 'Start Upload'}
+          {uploading ? "Uploading" : "Start Upload"}
         </Button>
         {isUploadOk && (
-          <div>
-            <p style={{ color: 'red' }}>Image uploaded successfully:</p>
-            <Alert message={JSON.stringify(imgPosted)} type="success" />
-          </div>
+          <Alert
+            message="Image uploaded successfully:"
+            description={
+              <a href={imgPosted.links?.path}>{imgPosted.links?.path}</a>
+            }
+            type="success"
+            showIcon
+            style={{ marginTop: 16 }}
+          />
         )}
-      </div>
+      </>
     );
   }
 }

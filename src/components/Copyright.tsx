@@ -5,7 +5,7 @@ const { Text } = Typography;
 const Copyright = () => {
   return (
     <>
-      <Text>Wanderlust Travel</Text>
+      <Text>© 2025 Wanderlust Travel, all rights reserved.</Text>
     </>
   );
 };
