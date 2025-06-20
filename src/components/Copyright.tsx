@@ -1,13 +1,13 @@
-import { Typography } from 'antd';
+import { Typography } from "antd";
 
 const { Text } = Typography;
 
 const Copyright = () => {
-    return (
-        <>
-            <Text>(c) 2025 Web API Development of demonstration ONLY</Text>
-        </>
-    )
-}
+  return (
+    <>
+      <Text>Wanderlust Travel</Text>
+    </>
+  );
+};
 
-export default Copyright
+export default Copyright;
