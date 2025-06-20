@@ -111,11 +111,15 @@ const Profile: React.FC = () => {
           },
         })
         .then((results) => {
-          alert(
-            `All records for user with id ${currentUser.id} are removed from the Hotel Agent`
-          );
-          localStorage.removeItem("user");
-          navigate("/", { replace: true });
+          console.log("respone ", JSON.stringify(results.data));
+          if (results.data) {
+            alert(
+              `All   records for user with id ${currentUser.id} are removed the Hotel Agent`
+            );
+            localStorage.removeItem("user");
+            navigate("/");
+            window.location.reload();
+          }
         })
         .catch((err) => {
           console.error("Check network problems pls.", err);
@@ -170,7 +174,11 @@ const Profile: React.FC = () => {
           },
         })
         .then((res) => {
-          alert("Successfully updated the date");
+          alert("User updated..pls login again to refresh data");
+          console.log(res.data);
+          localStorage.removeItem("user");
+          navigate("/");
+          window.location.reload();
         });
     },
     [currentUser.id, navigate]
