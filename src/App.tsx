@@ -54,22 +54,21 @@ export default function App() {
               <Space>
                 <Link to={"/"}>
                   <img
-                    src="/src/assets/small_Coventry_University.png"
+                    src="/src/assets/Wanderlust_Travelsmall.png"
                     alt="profile-img"
                     className="profile-img-card"
+                    style={{ height: "60px", width: "auto" }}
                   />
                 </Link>
-                <Link to="/">
-                  <HomeOutlined style={{ fontSize: "40px" }} />
-                </Link>
-                <Link to="/dashboard">
+                {/* <Link to="/dashboard">
                   <DashboardOutlined style={{ fontSize: "40px" }} />
+                </Link> */}
+
+                <Link to="/hotels">
+                  <HomeOutlined /> Hotels
                 </Link>
                 <Link to="/about">
                   <InfoCircleOutlined style={{ fontSize: "40px" }} />
-                </Link>
-                <Link to="/hotels">
-                  <HomeOutlined /> Hotels
                 </Link>
               </Space>
             </div>
@@ -94,6 +93,7 @@ export default function App() {
                     <Link to="/favpage">
                       <HeartFilled style={{ fontSize: "40px" }} />
                     </Link>
+
                     <a href="/" className="nav-link" onClick={logOut}>
                       <LogoutOutlined style={{ fontSize: "40px" }} />
                     </a>
@@ -102,9 +102,12 @@ export default function App() {
               </div>
             ) : (
               <div>
-                <Space>
+                <Space size="middle" align="center">
                   <Login />
-                  <Link to="/register">Register</Link>
+
+                  <Link to="/register" aria-label="Register">
+                    Register
+                  </Link>
                 </Space>
               </div>
             )}
@@ -124,12 +127,6 @@ export default function App() {
         </Content>
         <Footer>
           <Copyright />
-          <img
-            src="/src/assets/SHAPE_logo.png"
-            alt="profile-img"
-            className="profile-img-card"
-            style={{ float: "right" }}
-          />
         </Footer>
         <FloatButton.BackTop />
       </Layout>
