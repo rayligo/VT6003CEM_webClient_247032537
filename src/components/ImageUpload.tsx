@@ -50,7 +50,6 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
           imgPosted: result,
         });
 
-        // Update the user's avatarurl in the database
         if (currentUser && result.links?.path) {
           this.updateUserAvatar(result.links.path);
         }
@@ -63,6 +62,7 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
         this.setState({ uploading: false });
       });
   };
+
   updateUserAvatar = (avatarUrl: string) => {
     const userId = currentUser?.id;
     if (!userId) {
@@ -76,7 +76,6 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
       return;
     }
 
-    // Get username and email from currentUser
     const username = currentUser?.username;
     const email = currentUser?.email;
     if (!username || !email) {
@@ -91,7 +90,7 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
           avatarurl: avatarUrl,
           username: username,
           email: email,
-          password: "", // Send empty password to satisfy schema
+          password: "",
         },
         {
           headers: {
@@ -121,7 +120,6 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
       });
   };
   render() {
-    const { Title } = Typography;
     const { uploading, fileList, isUploadOk, imgPosted } = this.state;
 
     const uploadProps = {
@@ -140,24 +138,27 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
     };
 
     return (
-      <>
-        {currentUser?.role === "admin" ? (
-          <Title level={2}>Admin Upload Image</Title>
-        ) : (
-          <Title level={2}>User Upload Image</Title>
-        )}
-        <Upload {...uploadProps}>
-          <Button icon={<UploadOutlined />}>Select File</Button>
-        </Upload>
-        <Button
-          type="primary"
-          onClick={this.handleUpload}
-          disabled={fileList.length === 0}
-          loading={uploading}
-          style={{ marginTop: 16 }}
+      <div style={{ marginBottom: 16, maxWidth: 600 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
         >
-          {uploading ? "Uploading" : "Start Upload"}
-        </Button>
+          <Upload {...uploadProps}>
+            <Button icon={<UploadOutlined />}>Select File</Button>
+          </Upload>
+          <Button
+            type="primary"
+            onClick={this.handleUpload}
+            disabled={fileList.length === 0}
+            loading={uploading}
+          >
+            {uploading ? "Uploading" : "Start Upload"}
+          </Button>
+        </div>
         {isUploadOk && (
           <Alert
             message="Image uploaded successfully:"
@@ -169,7 +170,7 @@ class ImageUpload extends React.Component<{}, ImageUploadState> {
             style={{ marginTop: 16 }}
           />
         )}
-      </>
+      </div>
     );
   }
 }
