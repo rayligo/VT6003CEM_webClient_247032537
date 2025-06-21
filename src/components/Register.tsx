@@ -1,142 +1,151 @@
-import 'antd/dist/reset.css';
-import React, { useState } from "react";
-import { NavigateFunction, useNavigate } from 'react-router-dom';
-import UserT from "../types/user.type";
-import { Form, Input, Button } from 'antd';
+import "antd/dist/reset.css";
+import React from "react";
+import { NavigateFunction, useNavigate } from "react-router-dom";
+import { Form, Input, Button, Card, Typography, message } from "antd";
+import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { register } from "../services/auth.service";
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import UserT from "../types/user.type";
+
+const { Title } = Typography;
 
 const Register: React.FC = () => {
-  
-  let navigate: NavigateFunction = useNavigate();
-  const initialValues: UserT = {
-    username: "",
-    email: "",
-    password: "",
-    about: "",
-    avatarurl: "",
-    role: "user" ,
-    actiCode:"",
-  };
+  const navigate: NavigateFunction = useNavigate();
 
-  
+  const handleRegister = async (values: UserT) => {
+    const { username, email, password, actiCode } = values;
 
-  const handleRegister =  (values: UserT) => {
-    const { username, email, password,actiCode } = values;
-
-   register(username, email, password,actiCode).then(
-      (response) => {
-        
-        window.alert(`Welcome ${username} pls login to access your account profile`)
-        console.log(response.data);
-        navigate("/");
-        window.location.reload();
-      })
-      .catch((error) => {
-                 window.alert(`Sorry ${username} Something wrong with your registration! Pls try again with another username`)
-         console.log(error.toString());
-      
-        navigate("/register");
-        window.location.reload();
-      }
-    );
+    try {
+      await register(username, email, password, actiCode);
+      message.success(
+        `Welcome ${username}! Please login to access your account.`
+      );
+      navigate("/");
+      window.location.reload();
+    } catch (error) {
+      message.error(
+        `Registration failed: Sorry ${username}, something went wrong. Please try a different username.`
+      );
+      console.log(error.toString());
+    }
   };
 
   return (
-    
-         <>
-           <h3> <strong>Welcome to Blog Registration</strong></h3>
-             <Form style={{margin: "5px",width:"900px"}} 
-  layout="vertical"             name="normal_register"
-               className="register-form"
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <Card
+        className="w-full max-w-md shadow-lg"
+        style={{ borderRadius: "12px", padding: "24px" }}
+      >
+        <div className="text-center mb-6">
+          <img
+            src="/src/assets/Wanderlust_Travelsmall.png"
+            alt="Wanderlust Travel"
+            className="h-16 mx-auto mb-4"
+          />
+          <Title level={3} className="text-indigo-600">
+            Join Wanderlust Travel
+          </Title>
+        </div>
+        <Form
+          name="register"
+          initialValues={{ role: "user", actiCode: "" }}
+          onFinish={handleRegister}
+          layout="vertical"
+        >
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: "Please input your username!" }]}
+          >
+            <Input
+              prefix={<UserOutlined className="text-gray-400" />}
+              placeholder="Username"
+              size="large"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-               initialValues={initialValues}
-               onFinish={handleRegister}>
-                <Form.Item
-                  name="username"
-label="Username"                   
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input your Username!',
-                    },
-                  ]}
-                >
-                  <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
-                </Form.Item>
-                <Form.Item name="email"
-    label= "Email"              
-                   rules={[
-                     {type: 'email',
-                       message: 'The input is not valid E-mail!',
-                     },
-                     {required: true,
-                       message: 'Please input your E-mail!',
-                     },
-                   ]} >
-                 <Input  placeholder="emails" />
-                 </Form.Item>
-                 
-                 <Form.Item
-                   name="password"
-label= "Password"                 
-                   rules={[
-                     {
-                       required: true,
-                       message: 'Please input your password!',
-                     },
-                   ]}
-                   hasFeedback
-                 >
-                   <Input.Password  placeholder="Password"/>
-                 </Form.Item>
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: "Please input your email!" },
+              { type: "email", message: "Please enter a valid email!" },
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined className="text-gray-400" />}
+              placeholder="Email"
+              size="large"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-                 <Form.Item
-                   name="confirm"
-label= "Confirm Password"                  
-                   dependencies={['password']}
-                   hasFeedback
-                   rules={[
-                     {
-                       required: true,
-                       message: 'Please confirm your password!',
-                     },
-                     ({ getFieldValue }) => ({
-                       validator(_, value) {
-                         if (!value || getFieldValue('password') === value) {
-                           return Promise.resolve();
-                         }
-                         return Promise.reject(new Error('The new password that you entered do not match!'));
-                       },
-                     }),
-                   ]}
-                 >
-                   <Input.Password  placeholder="Confirm Password"/>
-                 </Form.Item>
-                <Form.Item
-                 name="actiCode" 
- label= "Activation Code"                 
-                  
-               >
-                 <Input.Password
-                   prefix={<LockOutlined className="site-form-item-icon" />}
-                   type="password"
-                   placeholder="secret code for internal staff(optional)"
-                 />
-               </Form.Item>
-              
-               <Form.Item>
-                 <Button type="primary" htmlType="submit" className="login-form-button">
-                   Register
-                 </Button>
-                 
-               </Form.Item>
-   
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please input your password!" }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="Password"
+              size="large"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-            
-          </Form>
-         
-         </>
+          <Form.Item
+            name="confirmPassword"
+            dependencies={["password"]}
+            rules={[
+              { required: true, message: "Please confirm your password!" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("The two passwords do not match!")
+                  );
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="Confirm Password"
+              size="large"
+              className="rounded-md"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="actiCode"
+            rules={[{ message: "Optional secret code for internal staff" }]}
+          >
+            <Input
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="Staff Code (Optional)"
+              size="large"
+              className="rounded-md"
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border-none rounded-md"
+            >
+              Register
+            </Button>
+          </Form.Item>
+
+          <div className="text-center">
+            <a className="text-indigo-600 hover:text-indigo-800" href="/login">
+              Already have an account? Log in
+            </a>
+          </div>
+        </Form>
+      </Card>
+    </div>
   );
 };
 
