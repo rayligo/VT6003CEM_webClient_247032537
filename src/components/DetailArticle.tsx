@@ -10,7 +10,6 @@ import {
   LoadingOutlined,
   CloseSquareOutlined,
   CloseSquareFilled,
-  EditOutlined,
   EditFilled,
 } from "@ant-design/icons";
 import { getCurrentUser } from "../services/auth.service";
@@ -115,7 +114,6 @@ const DetailArticle = () => {
               {" "}
               <p>{article.alltext}</p>
               <p>{article.summary}</p>
-              <h3>You are not logged in</h3>
               <p>{article.description}</p>
               <Button
                 type="primary"
