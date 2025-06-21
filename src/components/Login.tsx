@@ -1,113 +1,118 @@
-import 'antd/dist/reset.css';
+import "antd/dist/reset.css";
 import React, { useState } from "react";
-import { NavigateFunction, useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Checkbox, Modal} from 'antd';
-import { LoginOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
+import { NavigateFunction, useNavigate } from "react-router-dom";
+import { Form, Input, Button, Checkbox, Card, Typography, message } from "antd";
+import { LoginOutlined, UserOutlined, LockOutlined } from "@ant-design/icons";
 import { login } from "../services/auth.service";
 
-  const Login: React.FC = () => {
-    let navigate: NavigateFunction = useNavigate();
-    const [loading, setLoading] = useState<boolean>(false);
-    const [message, setMessage] = useState<string>("");
-    const [isShow, setIsShow] = React.useState(false); 
-    const onFinish = (values:any) => {
-    const { username, password } =values;
+const { Title } = Typography;
 
- 
-      
-    setMessage("");
+const Login: React.FC = () => {
+  const navigate: NavigateFunction = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const onFinish = async (values: any) => {
+    const { username, password, remember } = values;
+
     setLoading(true);
-
-    login(username, password).then(
-      () => {
-        if(localStorage.getItem("user"))
-          navigate("/profile");
+    try {
+      await login(username, password);
+      if (localStorage.getItem("user")) {
+        if (remember) {
+          // Store credentials for "Remember me" functionality
+          localStorage.setItem(
+            "rememberedUser",
+            JSON.stringify({ username, password })
+          );
+        } else {
+          localStorage.removeItem("rememberedUser");
+        }
+        message.success("Login successful!");
+        navigate("/");
         window.location.reload();
-      })
-      .catch( 
-       (error)  => {
-
-        const resMessage =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
-          error.message ||
-          error.toString();
-        window.alert(`Sorry ${username} you may not have account in our system yet! pls try again or register first`)
-        console.log(error.toString());     
-        setLoading(false);
-        setMessage(resMessage);
-         navigate("/");
-         window.location.reload();
-
       }
-
-    )
-
+    } catch (error) {
+      const resMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      message.error(`Login failed: ${resMessage}`);
+      setLoading(false);
     }
+  };
 
   return (
-    <>
-      <Button icon={<LoginOutlined />} onClick={()=>{setIsShow(true)}} />
-      <Modal open={isShow} onCancel={()=>{setIsShow(false)}} title="Welcome to Hotel Agent" footer={[]}> 
-    <Form style={{margin: "5px"}} 
-      name="normal_login"
-      layout="vertical"
-      wrapperCol={{span:10}}
-  className="login-form"
-      initialValues={{
-        remember: true,
-      }}
-      onFinish={onFinish}
-    >
-      <Form.Item
-        name="username"
-        label="Username"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your Username!',
-          },
-        ]}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <Card
+        className="w-full max-w-md shadow-lg"
+        style={{ borderRadius: "12px", padding: "24px" }}
       >
-        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
-      </Form.Item>
-      <Form.Item
-        name="password"
-        label="Password"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your Password!',
-          },
-        ]}
-      >
-        <Input.Password
-          prefix={<LockOutlined className="site-form-item-icon" />}
-          type="password"
-          placeholder="Password"
-        />
-      </Form.Item>
-      <Form.Item>
-        <Form.Item name="remember" valuePropName="checked" noStyle>
-          <Checkbox>Remember me</Checkbox>
-        </Form.Item>
+        <div className="text-center mb-6">
+          <img
+            src="/src/assets/Wanderlust_Travelsmall.png"
+            alt="Wanderlust Travel"
+            className="h-16 mx-auto mb-4"
+          />
+          <Title level={3} className="text-indigo-600">
+            Welcome to Wanderlust Travel
+          </Title>
+        </div>
+        <Form
+          name="login"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          layout="vertical"
+        >
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: "Please input your username!" }]}
+          >
+            <Input
+              prefix={<UserOutlined className="text-gray-400" />}
+              placeholder="Username"
+              size="large"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-        <a className="login-form-forgot" href="">
-          Forgot password
-        </a>
-      </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please input your password!" }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="Password"
+              size="large"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-      <Form.Item>
-        <Button type="primary" htmlType="submit" className="login-form-button">
-          Log in
-        </Button><a href="/register"> Or register now!</a>
-      </Form.Item>
-    </Form>
-        </Modal>
-    </>  
+          <Form.Item>
+            <Form.Item name="remember" valuePropName="checked" noStyle>
+              <Checkbox className="text-gray-600">Remember me</Checkbox>
+            </Form.Item>
+
+            <a
+              className="text-indigo-600 hover:text-indigo-800 float-right"
+              href="/register"
+            >
+              Register now!
+            </a>
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              size="large"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border-none rounded-md"
+            >
+              <LoginOutlined /> Log in
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+    </div>
   );
 };
-
 
 export default Login;
