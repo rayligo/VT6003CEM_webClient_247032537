@@ -6,7 +6,7 @@ import UserT from "./types/user.type";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
-// import Dashboard from "./components/Dashboard";
+
 import About from "./components/About";
 import DetailArticle from "./components/DetailArticle";
 import Profile from "./components/Profile";
@@ -64,14 +64,7 @@ export default function App() {
                   Home
                 </Link>
               </li>
-              {/* <li>
-                <Link
-                  to="/dashboard"
-                  className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block"
-                >
-                  Dashboard
-                </Link>
-              </li> */}
+
               <li>
                 <Link
                   to="/hotellistapi"
@@ -192,7 +185,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+
             <Route path="/about" element={<About />} />
             <Route path="/:aid" element={<DetailArticle />} />
             <Route path="/profile" element={<Profile />} />
