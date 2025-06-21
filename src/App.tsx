@@ -1,39 +1,40 @@
-//import './App.css';
-import "antd/dist/reset.css";
-import { Layout, Space, FloatButton } from "antd";
+import "./App.css";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-//import Landing from "./components/Landing"
 import * as AuthService from "./services/auth.service";
 import UserT from "./types/user.type";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
-import Dashboard from "./components/Dashboard";
+// import Dashboard from "./components/Dashboard";
 import About from "./components/About";
 import DetailArticle from "./components/DetailArticle";
 import Profile from "./components/Profile";
 import FavPage from "./components/favpage";
+import HotelListApi from "./components/HotelListApi";
+import Copyright from "./components/Copyright";
+import logo from "./assets/Wanderlust_Travelsmall.png";
+import hotelIcon from "./assets/hotel_icon.png";
+import aboutIcon from "./assets/about_icon.png";
+import loginIcon from "./assets/login.png";
+import RegisterIcon from "./assets/register.png";
+import manageHotelsIcon from "./assets/manage_hotels_icon.png";
+import adminIcon from "./assets/admin_icon.png";
 
 import {
-  LogoutOutlined,
   HomeOutlined,
-  DashboardOutlined,
-  InfoCircleOutlined,
-  HeartFilled,
+  HeartOutlined,
+  UserOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
-import Copyright from "./components/Copyright";
-import { Avatar } from "antd";
-import HotelListApi from "./components/HotelListApi";
-
-const { Header, Content, Footer } = Layout;
+import ManageHotels from "./components/ManageHotels";
+import HotelAgentsAdmin from "./components/HotelAgentsAdmin";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserT | undefined>(undefined);
 
   useEffect(() => {
     const user = AuthService.getCurrentUser();
-
     if (user) {
       setCurrentUser(user);
     }
@@ -46,90 +47,163 @@ export default function App() {
 
   return (
     <Router>
-      <Layout>
-        <Header>
-          <nav style={{ float: "left" }}>
-            <div>
-              {" "}
-              <Space>
-                <Link to={"/"}>
-                  <img
-                    src="/src/assets/Wanderlust_Travelsmall.png"
-                    alt="profile-img"
-                    className="profile-img-card"
-                    style={{ height: "60px", width: "auto" }}
-                  />
+      <div className="flex">
+        <div className="w-64 bg-gray-800 text-white h-screen p-4">
+          <div className="mb-6">
+            <img src={logo} alt="Logo" className="h-10 mb-4" />
+            <h1 className="text-2xl font-bold">Wanderlust</h1>
+          </div>
+          <nav>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  to="/"
+                  className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                >
+                  <HomeOutlined className="mr-2" />
+                  Home
                 </Link>
-                {/* <Link to="/dashboard">
-                  <DashboardOutlined style={{ fontSize: "40px" }} />
-                </Link> */}
-
-                <Link to="/hotels">
-                  <HomeOutlined /> Hotels
+              </li>
+              {/* <li>
+                <Link
+                  to="/dashboard"
+                  className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block"
+                >
+                  Dashboard
                 </Link>
-                <Link to="/about">
-                  <InfoCircleOutlined style={{ fontSize: "40px" }} />
+              </li> */}
+              <li>
+                <Link
+                  to="/hotellistapi"
+                  className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                >
+                  <img src={hotelIcon} alt="Hotel" className="h-5 w-5 mr-1" />
+                  Hotels
                 </Link>
-              </Space>
-            </div>
-          </nav>
-
-          <nav style={{ float: "right" }}>
-            {currentUser ? (
-              <div>
-                <Link to={"/profile"}>
-                  {currentUser.avatarurl &&
-                  currentUser.avatarurl.indexOf("http") >= 0 ? (
-                    <Avatar size="large" src={currentUser.avatarurl} />
-                  ) : (
-                    <Avatar size="large" style={{ backgroundColor: "#87d068" }}>
-                      {currentUser.username}
-                    </Avatar>
-                  )}
-                </Link>{" "}
-                <Space align="center">
-                  {" "}
-                  <div>
-                    <Link to="/favpage">
-                      <HeartFilled style={{ fontSize: "40px" }} />
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                >
+                  <img src={aboutIcon} alt="About" className="h-5 w-5 mr-1" />
+                  About
+                </Link>
+              </li>
+              {currentUser && (
+                <>
+                  <li>
+                    <Link
+                      to="/favpage"
+                      className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                    >
+                      <HeartOutlined className="mr-2" />
+                      Favorites
                     </Link>
-
-                    <a href="/" className="nav-link" onClick={logOut}>
-                      <LogoutOutlined style={{ fontSize: "40px" }} />
-                    </a>
-                  </div>{" "}
-                </Space>{" "}
-              </div>
-            ) : (
-              <div>
-                <Space size="middle" align="center">
-                  <Login />
-
-                  <Link to="/register" aria-label="Register">
-                    Register
-                  </Link>
-                </Space>
-              </div>
-            )}
+                  </li>
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                    >
+                      <UserOutlined className="mr-2" />
+                      Profile
+                    </Link>
+                  </li>
+                  {currentUser.role === "admin" && (
+                    <>
+                      <li>
+                        <Link
+                          to="/manage-hotels"
+                          className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                        >
+                          <img
+                            src={manageHotelsIcon}
+                            alt="Manage Hotels"
+                            className="h-5 w-5 mr-1"
+                          />
+                          Manage Hotels
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/hotel-agents-admin"
+                          className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                        >
+                          <img
+                            src={adminIcon}
+                            alt="Hotel Agents Admin"
+                            className="h-5 w-5 mr-1"
+                          />
+                          Hotel Agents Admin
+                        </Link>
+                      </li>
+                    </>
+                  )}
+                  <li>
+                    <button
+                      onClick={() => {
+                        AuthService.logout();
+                        setCurrentUser(undefined);
+                      }}
+                      className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                    >
+                      <LogoutOutlined className="mr-2" />
+                      Logout
+                    </button>
+                  </li>
+                </>
+              )}
+              {!currentUser && (
+                <>
+                  <li>
+                    <Link
+                      to="/login"
+                      className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                    >
+                      <img
+                        src={loginIcon}
+                        alt="Login"
+                        className="h-5 w-5 mr-1"
+                      />
+                      Login
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/register"
+                      className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                    >
+                      <img
+                        src={RegisterIcon}
+                        alt="Register"
+                        className="h-5 w-5 mr-1"
+                      />
+                      Register
+                    </Link>
+                  </li>
+                </>
+              )}
+            </ul>
           </nav>
-        </Header>
-        <Content>
+        </div>
+        <div className="flex-1 p-6">
           <Routes>
-            <Route index element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            {/* <Route path="/dashboard" element={<Dashboard />} /> */}
             <Route path="/about" element={<About />} />
             <Route path="/:aid" element={<DetailArticle />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/register" element={<Register />} />
             <Route path="/favpage" element={<FavPage />} />
-            <Route path="/hotels" element={<HotelListApi />} />
+            <Route path="/hotellistapi" element={<HotelListApi />} />
+            <Route path="/manage-hotels" element={<ManageHotels />} />
+            <Route path="/hotel-agents-admin" element={<HotelAgentsAdmin />} />
           </Routes>
-        </Content>
-        <Footer>
           <Copyright />
-        </Footer>
-        <FloatButton.BackTop />
-      </Layout>
+        </div>
+      </div>
     </Router>
   );
 }
