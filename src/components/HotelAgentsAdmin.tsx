@@ -19,7 +19,6 @@ const HotelAgentsAdmin: React.FC = () => {
 
   return (
     <div style={{ marginLeft: "15px", marginBottom: "15px" }}>
-      <h2 style={{ color: "#135200" }}>Hotel Agents Administration</h2>
       <SearchUser authbasic={`${localStorage.getItem("aToken")}`} />
     </div>
   );
