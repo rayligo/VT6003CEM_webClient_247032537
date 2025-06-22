@@ -70,16 +70,17 @@ export default function App() {
 
               <li>
                 <Link
-                  to="/flightListApi"
+                  to="/hotellistapi"
                   className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
                 >
                   <img src={hotelIcon} alt="Hotel" className="h-5 w-5 mr-1" />
                   Hotels
                 </Link>
               </li>
+
               <li>
                 <Link
-                  to="/hotellistapi"
+                  to="/flightListApi"
                   className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
                 >
                   <img src={flightIcon} alt="Hotel" className="h-5 w-5 mr-1" />

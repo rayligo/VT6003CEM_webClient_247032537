@@ -88,8 +88,6 @@ const DetailArticle = () => {
     const Icon = getIcon(theme);
     return (
       <>
-        <h2 style={{ color: "red" }}>Hotel Details</h2>
-
         <Col span={24}>
           <Card
             title={article.title}
