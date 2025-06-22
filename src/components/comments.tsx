@@ -5,107 +5,94 @@ import {
   DeleteFilled,
   MessageOutlined,
 } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCurrentUser } from "../services/auth.service";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 
 const DisplayComment = (props: any) => {
-  const [article_comments, setComments] = React.useState<any>([]);
-  const [isShow, setIsShow] = React.useState(false);
+  const [article_comments, setComments] = useState<any[]>([]);
+  const [isShow, setIsShow] = useState(false);
   const currentUser = getCurrentUser();
   const navigate: NavigateFunction = useNavigate();
 
-  let islogin = false;
-  let isAdmin = false;
-  let Icon = DeleteOutlined;
+  const isLogin = !!currentUser;
+  const isAdmin = currentUser?.role === "admin";
 
-  if (currentUser) {
-    islogin = true;
-    if (currentUser.role == "admin") isAdmin = true;
-  }
-
-  React.useEffect(() => {
+  useEffect(() => {
     axios
       .get(props.msgLink)
       .then((res) => {
         setComments(res.data);
-        console.log("no of msg ", article_comments.length);
+        console.log("Number of comments:", res.data.length);
       })
       .catch((err) => {
-        console.log(`icon error for msg  `);
+        console.error(`Error fetching comments: ${err}`);
       });
-  }, []);
+  }, [props.msgLink]);
 
-  const addComment: any = (event: any) => {
-    console.log("event.target.value ", event.target.value);
-    if (event.target.value != null) {
-      const raw = { messagetxt: `${event.target.value}` };
-      console.log("raw ", raw);
-      return axios
+  const addComment = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const value = (event.target as HTMLInputElement).value;
+    if (value) {
+      const raw = { messagetxt: value };
+      axios
         .post(props.msgLink, raw, {
           headers: {
             Authorization: `Basic ${localStorage.getItem("aToken")}`,
           },
         })
-        .then((reponse) => {
-          if (reponse.data.message === "added") {
-            alert("comment added");
+        .then((response) => {
+          if (response.data.message === "added") {
+            alert("Comment added");
             navigate("/");
             window.location.reload();
-          } else alert("check database or network problems");
+          } else {
+            alert("Check database or network problems");
+          }
         })
         .catch((err) => {
-          console.log(
-            `${props.msgLink} Check network problems pls. ${props.id}`
-          );
+          console.error(`Error posting comment: ${props.msgLink} - ${err}`);
           alert("Check network problems");
         });
     }
   };
 
   const removeComm = (cid: number) => {
-    Icon = DeleteFilled;
-
-    if (cid != undefined) {
+    if (cid) {
       axios
         .delete(props.msgLink, {
           headers: {
             Authorization: `Basic ${localStorage.getItem("aToken")}`,
           },
-          data: { cid: cid },
+          data: { cid },
         })
         .then((response) => {
-          console.log("respone ", JSON.stringify(response.data.message));
           if (response.data.message === "removed") {
-            alert("This article commentis removed by admin");
+            alert("This comment is removed by admin");
             navigate("/");
             window.location.reload();
           }
         })
         .catch((err) => {
-          console.log(
-            `${props.type} Check network problems pls. ${props.id}` + err
-          );
+          console.error(`Error deleting comment: ${props.id} - ${err}`);
           alert("Check network problems");
         });
     }
   };
 
+  const getDeleteIcon = () => (isAdmin ? DeleteFilled : DeleteOutlined);
+
   return (
     <>
       <Button
         icon={<MessageOutlined />}
-        onClick={() => {
-          setIsShow(true);
-        }}
+        onClick={() => setIsShow(true)}
+        aria-label="Show comments"
       />
       <Modal
         open={isShow}
-        onCancel={() => {
-          setIsShow(false);
-        }}
-        title="Comments Page "
+        onCancel={() => setIsShow(false)}
+        title="Comments Page"
         footer={[]}
       >
         <List
@@ -117,15 +104,20 @@ const DisplayComment = (props: any) => {
               <li>
                 <Comment
                   actions={[
-                    <span key="comment-basic-reply-to">
-                      <a href={`mailto:${item.email}`}>Reply to</a>
-                    </span>,
-                    <span>
-                      {isAdmin && <Icon onClick={() => removeComm(item.cid)} />}
-                    </span>,
-                  ]}
+                    isLogin && (
+                      <span key="comment-basic-reply-to">
+                        <a href={`mailto:${item.email}`}>Reply to</a>
+                      </span>
+                    ),
+                    isAdmin && (
+                      <span key="comment-delete">
+                        {React.createElement(getDeleteIcon(), {
+                          onClick: () => removeComm(item.cid),
+                        })}
+                      </span>
+                    ),
+                  ].filter(Boolean)} // Remove falsy values (e.g., when isLogin is false)
                   author={item.username}
-                  // avatar={item.avatar}
                   content={item.messagetxt}
                   datetime={item.datemodified}
                 />
@@ -134,9 +126,13 @@ const DisplayComment = (props: any) => {
           )}
         />
         <Input
-          placeholder="Pls. login to enter your comments here"
+          placeholder={
+            isLogin
+              ? "Enter your comment here"
+              : "Pls. login to enter your comments here"
+          }
           name="input_msg"
-          disabled={islogin ? false : true}
+          disabled={!isLogin}
           allowClear
           onPressEnter={addComment}
         />
