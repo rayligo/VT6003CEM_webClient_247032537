@@ -21,6 +21,7 @@ import RegisterIcon from "./assets/register.png";
 import manageHotelsIcon from "./assets/manage_hotels_icon.png";
 import adminIcon from "./assets/admin_icon.png";
 import flightIcon from "./assets/flight_icon.png";
+import PackageListIcon from "./assets/travel_package_icon.png";
 
 import {
   HomeOutlined,
@@ -30,6 +31,7 @@ import {
 } from "@ant-design/icons";
 import ManageHotels from "./components/ManageHotels";
 import HotelAgentsAdmin from "./components/HotelAgentsAdmin";
+import PackageList from "./components/PackageList";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserT | undefined>(undefined);
@@ -68,13 +70,36 @@ export default function App() {
 
               <li>
                 <Link
-                  to="/hotellistapi"
+                  to="/flightListApi"
                   className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
                 >
                   <img src={hotelIcon} alt="Hotel" className="h-5 w-5 mr-1" />
                   Hotels
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/hotellistapi"
+                  className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                >
+                  <img src={flightIcon} alt="Hotel" className="h-5 w-5 mr-1" />
+                  Flights
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/PackageList"
+                  className="w-full text-left py-2 px-4 rounded hover:bg-indigo-700 hover:text-white block flex items-center"
+                >
+                  <img
+                    src={PackageListIcon}
+                    alt="Hotel"
+                    className="h-5 w-5 mr-1"
+                  />
+                  PackageList
+                </Link>
+              </li>
+
               <li>
                 <Link
                   to="/about"
@@ -119,6 +144,7 @@ export default function App() {
                           Manage Hotels
                         </Link>
                       </li>
+
                       <li>
                         <Link
                           to="/hotel-agents-admin"
@@ -194,6 +220,7 @@ export default function App() {
             <Route path="/flightListApi" element={<FlightListApi />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/hotel-agents-admin" element={<HotelAgentsAdmin />} />
+            <Route path="/PackageList" element={<PackageList />} />
           </Routes>
           <Copyright />
         </div>
