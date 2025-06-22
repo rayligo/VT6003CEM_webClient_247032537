@@ -112,8 +112,11 @@ const DetailArticle = () => {
           >
             <div>
               {" "}
+              <p>Hotel Details:</p>
               <p>{article.alltext}</p>
+              <p>Summary:</p>
               <p>{article.summary}</p>
+              <p>Description:</p>
               <p>{article.description}</p>
               <Button
                 type="primary"
