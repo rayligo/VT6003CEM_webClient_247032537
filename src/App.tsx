@@ -6,7 +6,7 @@ import UserT from "./types/user.type";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
-
+import FlightListApi from "./components/FlightListApi";
 import About from "./components/About";
 import DetailArticle from "./components/DetailArticle";
 import Profile from "./components/Profile";
@@ -20,6 +20,7 @@ import loginIcon from "./assets/login.png";
 import RegisterIcon from "./assets/register.png";
 import manageHotelsIcon from "./assets/manage_hotels_icon.png";
 import adminIcon from "./assets/admin_icon.png";
+import flightIcon from "./assets/flight_icon.png";
 
 import {
   HomeOutlined,
@@ -185,12 +186,12 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-
             <Route path="/about" element={<About />} />
             <Route path="/:aid" element={<DetailArticle />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/favpage" element={<FavPage />} />
             <Route path="/hotellistapi" element={<HotelListApi />} />
+            <Route path="/flightListApi" element={<FlightListApi />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/hotel-agents-admin" element={<HotelAgentsAdmin />} />
           </Routes>
