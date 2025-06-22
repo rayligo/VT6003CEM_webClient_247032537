@@ -1,11 +1,21 @@
 import "antd/dist/reset.css";
-import { useState } from "react";
-import { Input, message, Typography } from "antd";
+import { useState, useCallback } from "react";
+import {
+  Input,
+  message,
+  Typography,
+  Card,
+  Button,
+  Space,
+  Table,
+  Select,
+  Col,
+  Popconfirm,
+} from "antd";
 import { api } from "./common/http-common";
-import { Table, Select, Col, Popconfirm } from "antd";
 import axios from "axios";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -18,70 +28,74 @@ interface User {
   role: string;
 }
 
-function SearchUser() {
-  let navigate: NavigateFunction = useNavigate();
-  const [press, setPress] = useState("");
-  const [usersData, setUsers] = useState<User[]>([]);
-  const [isSearchOK, setSearch] = useState(false);
+const SearchUser: React.FC<{ authbasic: string }> = ({ authbasic }) => {
+  const navigate: NavigateFunction = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [usersData, setUsersData] = useState<User[]>([]);
+  const [isSearchOK, setSearchOK] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [searchField, setSearchField] = useState("all");
 
-  const onSearch = async (value: any) => {
-    console.log("value ", value);
-    console.log("press ", `${press}`);
-    let urlPath = `${api.uri}/users`;
-    if (press === "email" || press === "username")
-      urlPath += `/?fields=${press}&q=${value}`;
-    else if (press === "username&fields=email" && value === "")
-      urlPath += `/?fields=${press}`;
-
-    console.log("urlPath ", urlPath);
-
-    console.log("aToken ", localStorage.getItem("aToken"));
-    return await axios
-      .get(`${urlPath}`, {
-        method: "GET",
-        headers: { Authorization: `Basic ${localStorage.getItem("aToken")}` },
-      })
-      .then((data) => {
-        console.log("user return  ", JSON.stringify(data));
-        console.log("user data  ", data);
-        if (!data.data.length || data.data.length == 0) {
-          alert("No data found");
-          navigate("/profile");
-          window.location.reload();
+  const onSearch = useCallback(
+    async (value: string) => {
+      setLoading(true);
+      try {
+        let urlPath = `${api.uri}/users`;
+        if (searchField === "email" || searchField === "username") {
+          urlPath += `/?fields=${searchField}&q=${value}`;
+        } else if (searchField === "username&fields=email" && value === "") {
+          urlPath += `/?fields=${searchField}`;
         }
-        setUsers(data.data);
-        setSearch(true);
-        value = "";
-      })
-      .catch((err) => console.log("Error fetching users", err));
-  };
 
-  function handleChange(value: any) {
-    message.info(
-      "Pls. enter at least three characters to search by email or username otherwise leave the input empty"
-    );
+        const response = await axios.get(urlPath, {
+          headers: { Authorization: `Basic ${authbasic}` },
+        });
 
-    setPress(value);
-    console.log(`selected ${value}`);
-  }
-
-  const handleDelete = (id: number) => {
-    axios
-      .delete(`${api.uri}/users/${id}`, {
-        headers: {
-          Authorization: `Basic ${localStorage.getItem("aToken")}`,
-        },
-      })
-      .then((results) => {
-        console.log("respone ", JSON.stringify(results.data));
-        if (results.data) {
-          setUsers(usersData.filter((user) => user.id !== id));
+        if (!response.data.length) {
+          message.warning("No users found");
+          setUsersData([]);
+          setSearchOK(false);
+          return;
         }
-      })
-      .catch((err) => {
-        console.log(`Check network problems pls. ` + err);
-        alert("Check network problems");
-      });
+
+        setUsersData(response.data);
+        setSearchOK(true);
+        setSearchTerm("");
+      } catch (err) {
+        message.error("Failed to fetch users. Please check your network.");
+        console.error("Error fetching users", err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [searchField, authbasic, navigate]
+  );
+
+  const handleDelete = useCallback(
+    async (id: number) => {
+      setLoading(true);
+      try {
+        await axios.delete(`${api.uri}/users/${id}`, {
+          headers: { Authorization: `Basic ${authbasic}` },
+        });
+        setUsersData(usersData.filter((user) => user.id !== id));
+        message.success("User deleted successfully");
+      } catch (err) {
+        message.error("Failed to delete user. Please try again.");
+        console.error("Delete error", err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [usersData, authbasic]
+  );
+
+  const handleReset = () => {
+    setSearchTerm("");
+    setSearchField("all");
+    setUsersData([]);
+    setSearchOK(false);
+    onSearch("");
   };
 
   const columns = [
@@ -89,6 +103,7 @@ function SearchUser() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      sorter: (a: User, b: User) => a.id - b.id,
     },
     {
       title: "Username",
@@ -108,15 +123,15 @@ function SearchUser() {
     {
       title: "Action",
       key: "action",
-      render: (text: string, record: User) => (
+      render: (_: string, record: User) => (
         <Popconfirm
           title="Are you sure you want to delete this user?"
           onConfirm={() => handleDelete(record.id)}
           okText="Yes"
           cancelText="No"
         >
-          {record.role && record.role !== "admin" && (
-            <DeleteOutlined style={{ fontSize: "32px", color: "red" }} />
+          {record.role !== "admin" && (
+            <DeleteOutlined className="text-red-500 text-lg hover:text-red-700" />
           )}
         </Popconfirm>
       ),
@@ -124,37 +139,61 @@ function SearchUser() {
   ];
 
   return (
-    <>
-      <Col span={16}>
-        <Title level={3} style={{ color: "#0032b3" }}>
-          Hotel Agents Admin
-        </Title>
-        <Title level={5}>Manage User Info</Title>
-        <Search
-          placeholder="Search Users"
-          allowClear
-          enterButton="Search"
-          size="large"
-          onSearch={onSearch}
-        />
-        <Select
-          defaultValue="all"
-          style={{ width: 280, marginRight: "200px" }}
-          onChange={handleChange}
-        >
-          <Option value="username">username</Option>
-          <Option value="email">email</Option>
-          <Option value="username&fields=email">
-            Get all-filter by username & email
-          </Option>
-          <Option value="all">Get all-without filter</Option>
-        </Select>
+    <Card className="shadow-sm">
+      <Space direction="vertical" size="large" className="w-full">
+        <div>
+          <Title level={3} className="!text-blue-600">
+            Hotel Agents Management
+          </Title>
+          <Typography.Text type="secondary">
+            Search and manage user accounts
+          </Typography.Text>
+        </div>
+        <Space wrap>
+          <Search
+            placeholder="Search users by username or email"
+            allowClear
+            enterButton="Search"
+            size="large"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onSearch={onSearch}
+            style={{ width: 300 }}
+            loading={loading}
+          />
+          <Select
+            value={searchField}
+            size="large"
+            onChange={setSearchField}
+            style={{ width: 250 }}
+          >
+            <Option value="username">Username</Option>
+            <Option value="email">Email</Option>
+            <Option value="username&fields=email">Username & Email</Option>
+            <Option value="all">All Users</Option>
+          </Select>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={handleReset}
+            size="large"
+            type="default"
+          >
+            Reset
+          </Button>
+        </Space>
         {isSearchOK && (
-          <Table dataSource={usersData} columns={columns} rowKey="id"></Table>
+          <Table
+            dataSource={usersData}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={{ pageSize: 10 }}
+            className="mt-4"
+          />
         )}
-      </Col>
-    </>
+      </Space>
+    </Card>
   );
-}
+};
 
 export default SearchUser;
